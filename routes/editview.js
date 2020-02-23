@@ -36,7 +36,23 @@ exports.get = function (req, res, next) {
 
     editview.getTypes(args, function (err, data) {
         if (err) return next(err);
-        render(req, res, next, data, args);
+
+        var preView = function () {
+            var events = res.locals._admin.events;
+            if(data.view.tables[0].records.length) {
+                args.data = data;
+                return events.preView.bind(events, req, res, args)
+            }
+            return function (done) {
+                done();
+            }
+        }
+
+        async.series([
+            preView()
+        ], function (err) {
+            render(req, res, next, data, args);
+        });
     });
 }
 
@@ -81,20 +97,26 @@ exports.post = function (req, res, next) {
 
             req.session.success = true;
 
-            // based on clicked button
-            if (action(req, 'remove')) {
-                // the message should be different for delete
-                res.redirect(res.locals.root+'/'+args.slug+page(req, args));
-            }
-            else if (action(req, 'save')) {
-                res.redirect(res.locals.root+'/'+args.slug+page(req, args));
-            }
-            else if (action(req, 'another')) {
-                res.redirect(res.locals.root+'/'+args.slug+'/add');
-            }
-            else if (action(req, 'continue')) {
-                if (args.debug) return render(req, res, next, data, args);
-                res.redirect(res.locals.root+'/'+args.slug+'/'+args.id.join());
+            var rpath = req.query.rpath;
+
+            if(rpath) {
+                res.redirect(res.locals.root+'/'+rpath);
+            }else {
+                // based on clicked button
+                if (action(req, 'remove')) {
+                    // the message should be different for delete
+                    res.redirect(res.locals.root+'/'+args.slug+page(req, args));
+                }
+                else if (action(req, 'save')) {
+                    res.redirect(res.locals.root+'/'+args.slug+page(req, args));
+                }
+                else if (action(req, 'another')) {
+                    res.redirect(res.locals.root+'/'+args.slug+'/add');
+                }
+                else if (action(req, 'continue')) {
+                    if (args.debug) return render(req, res, next, data, args);
+                    res.redirect(res.locals.root+'/'+args.slug+'/'+args.id.join());
+                }
             }
         });
     });
@@ -126,13 +148,14 @@ function render (req, res, next, data, args) {
     data.oneToOne.type = 'one';
     data.manyToOne.type = 'many';
     res.locals.inline = [data.oneToOne, data.manyToOne];
-        
+
     res.locals.partials = {
         content:  'editview',
         view:     'editview/view',
         inline:   'editview/inline',
         column:   'editview/column'
     };
-    
+
+
     next();
 }

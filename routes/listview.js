@@ -131,6 +131,6 @@ function render (req, res, args, ddata, pager, order, next) {
         column:     'listview/column',
         pagination: 'pagination'
     };
-    
+
     next();
 }

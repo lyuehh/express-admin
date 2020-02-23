@@ -36,7 +36,7 @@
     </thead>
     <tbody>
     {{#records}}
-        <tr>
+        <tr style="cursor:pointer;" onclick="location.href='{{root}}/{{view.slug}}/{{pk.id}}';">
         {{#pk}}
             <td><a href="{{root}}/{{view.slug}}/{{id}}">{{text}}</a></td>
         {{/pk}}

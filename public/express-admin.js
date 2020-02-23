@@ -108,7 +108,7 @@ $(function () {
             var $controls = getControls(this);
             $controls.each(function (i) {
                 var name = $(this).attr('name');
-                $(this).attr('name', 
+                $(this).attr('name',
                     name.replace('blank', 'records').replace('index', index));
             });
         });
@@ -118,7 +118,7 @@ $(function () {
             $rows.eq(0).find('input').attr('name',
                 name.replace('blank', 'records').replace('index', index));
         }());
-        
+
         // append
         var tbody = $('tbody', $table);
         $rows.appendTo(tbody);
@@ -151,7 +151,7 @@ $(function () {
         // re-set the indexes
         $('.head:not(.blank)', $table).each(function (index) {
             var idx = -1;
-            
+
             $('.jumbotron input', this).each(function () {
                 var name = $(this).attr('name');
                 idx = name.match(/.*(\[\d+\]).*/)[1];
@@ -167,7 +167,7 @@ $(function () {
                 });
             });
         });
-        
+
         // one
         if ($table.parents('#one').length) {
             $('tfoot', $table).removeClass('hidden');
@@ -239,7 +239,30 @@ $(function () {
     // chosen
     if ($('.chosen-select').length) {
         if (isMobile()) $('.chosen-select').show();
-        $('tr:not(.blank) .chosen-select, .x-filter .chosen-select').chosen(chosen);
+        var chosenEls = $('tr:not(.blank) .chosen-select, .x-filter .chosen-select');
+        if(window.gChosenConfig) {
+            for(var key in gChosenConfig) {
+                gChosenConfig[key] = gChosenConfig[key] || {};
+                gChosenConfig[key].el = $(gChosenConfig[key].selector)[0];
+            }
+            chosenEls.each(function(idx, el) {
+                var item = null;
+                for(key in gChosenConfig) {
+                    var configEl = gChosenConfig[key].el;
+                    if(el == configEl) {
+                        item = gChosenConfig[key];
+                        break;
+                    }
+                }
+                if(item) {
+                    $(item.selector).chosen($.extend({}, chosen, item.chosen));
+                }else {
+                    $(el).chosen(chosen);
+                }
+            });
+        }else {
+            chosenEls.chosen(chosen);
+        }
     }
 
     // datepicker
